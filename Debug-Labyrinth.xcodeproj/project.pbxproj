@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FF6EE449260E494400A99E44 /* MazeUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6EE448260E494400A99E44 /* MazeUtilities.swift */; };
+		FF6EE44D26126E3A00A99E44 /* MazeUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6EE44C26126E3A00A99E44 /* MazeUtilities.swift */; };
 		FFC6C6D3260E469D0026B55F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFC6C6D2260E469D0026B55F /* AppDelegate.swift */; };
 		FFC6C6D5260E469D0026B55F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFC6C6D4260E469D0026B55F /* SceneDelegate.swift */; };
 		FFC6C6D7260E469D0026B55F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFC6C6D6260E469D0026B55F /* ViewController.swift */; };
@@ -17,7 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		FF6EE448260E494400A99E44 /* MazeUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MazeUtilities.swift; path = ../../../../Downloads/MazeUtilities.swift; sourceTree = "<group>"; };
+		FF6EE44C26126E3A00A99E44 /* MazeUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MazeUtilities.swift; sourceTree = "<group>"; };
 		FFC6C6CF260E469C0026B55F /* Debug-Labyrinth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Debug-Labyrinth.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FFC6C6D2260E469D0026B55F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FFC6C6D4260E469D0026B55F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -63,7 +63,7 @@
 				FFC6C6D6260E469D0026B55F /* ViewController.swift */,
 				FFC6C6D8260E469D0026B55F /* Main.storyboard */,
 				FFC6C6DB260E46A10026B55F /* Assets.xcassets */,
-				FF6EE448260E494400A99E44 /* MazeUtilities.swift */,
+				FF6EE44C26126E3A00A99E44 /* MazeUtilities.swift */,
 				FFC6C6DD260E46A10026B55F /* LaunchScreen.storyboard */,
 				FFC6C6E0260E46A10026B55F /* Info.plist */,
 			);
@@ -144,7 +144,7 @@
 				FFC6C6D7260E469D0026B55F /* ViewController.swift in Sources */,
 				FFC6C6D3260E469D0026B55F /* AppDelegate.swift in Sources */,
 				FFC6C6D5260E469D0026B55F /* SceneDelegate.swift in Sources */,
-				FF6EE449260E494400A99E44 /* MazeUtilities.swift in Sources */,
+				FF6EE44D26126E3A00A99E44 /* MazeUtilities.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

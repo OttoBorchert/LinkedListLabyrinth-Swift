@@ -1,17 +1,7 @@
 import Foundation
-//import GameplayKit
+import GameplayKit
 
-//let mt = GKMersenneTwisterRandomSource.init(seed: 12345)
-
-//for _ in (1...5) {
-//  print(mt.nextUniform())
-//}
-// Placeholder under I get random numbers working
-class Random {
-              
-}
-
-class MazeCell: Hashable {
+class MazeCell: NSObject {
     var whatsHere : String = "" // One of "", "Potion", "Spellbook", and "Wand"
 
     var north : MazeCell?
@@ -19,22 +9,6 @@ class MazeCell: Hashable {
     var east : MazeCell?
     var west : MazeCell?
   
-      static func == (lhs: MazeCell, rhs: MazeCell) -> Bool {
-        return lhs.whatsHere == rhs.whatsHere && 
-               lhs.north === rhs.north &&
-              lhs.south === rhs.south &&
-              lhs.east === rhs.east &&
-              lhs.west === rhs.west
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(whatsHere)
-        hasher.combine(north)
-        hasher.combine(south)
-        hasher.combine(east)
-        hasher.combine(west)
-    }
-
 }
 
 struct MazeUtilities {
@@ -91,18 +65,19 @@ struct MazeUtilities {
      * of talented folks at Stanford University. We use this hash implementation to ensure
      * consistency from run to run and across systems.
      */
-    private static let HASH_SEED = 5381;       // Starting point for first cycle
-    private static let HASH_MULTIPLIER = 33;   // Multiplier for each cycle
-    private static let HASH_MASK = 0x7FFFFFFF; // All 1 bits except the sign
+    private static let HASH_SEED : UInt32 = 5381;       // Starting point for first cycle
+    private static let HASH_MULTIPLIER : UInt32 = 33;   // Multiplier for each cycle
+    private static let HASH_MASK : UInt32 = 0x7FFFFFFF; // All 1 bits except the sign
 
-      private static func hashCode(_ value : Int) -> Int {
+      private static func hashCode(_ value : UInt32) -> UInt32 {
         return value & HASH_MASK;
     }
 
-    private static func hashCode(_ str : String) -> Int {
+    private static func hashCode(_ str : String) -> UInt32 {
         var hash = HASH_SEED
         for ch in Array(str) {
-            hash = HASH_MULTIPLIER * hash + Int(ch.asciiValue!);
+            let chAscii = UInt32(ch.asciiValue!)
+            hash = HASH_MULTIPLIER &* hash &+ chAscii
         }
         return hashCode(hash);
     }
@@ -112,10 +87,10 @@ struct MazeUtilities {
      * The components are scaled up so as to spread out the range of values
      * and reduce collisions.
      */
-    private static func hashCode(_ str : String, _ values : Int...) -> Int {
+    private static func hashCode(_ str : String, _ values : UInt32...) -> UInt32 {
         var result = hashCode(str)
         for value in values {
-            result = result * HASH_MULTIPLIER + value
+            result = result &* HASH_MULTIPLIER &+ value
         }
         return hashCode(result)
     }
@@ -139,9 +114,9 @@ struct MazeUtilities {
      */
     
     public static func mazeFor(_ name : String) -> MazeCell {
-        //Random generator = new Random(hashCode(name, NUM_ROWS, NUM_COLS));
-        let generator = Random()
-        var maze = makeMaze(NUM_ROWS, NUM_COLS, generator);
+        let generator = GKMersenneTwisterRandomSource.init(seed: UInt64(hashCode(name, UInt32(NUM_ROWS), UInt32(NUM_COLS))))
+
+        let maze = makeMaze(NUM_ROWS, NUM_COLS, generator);
         
         var linearMaze = [MazeCell]()
         for row in 0..<maze.count {
@@ -151,7 +126,7 @@ struct MazeUtilities {
         }
         
         let distances = allPairsShortestPaths(linearMaze);
-        var locations = remoteLocationsIn(distances);
+        let locations = remoteLocationsIn(distances);
         
         // Place the items. 
         linearMaze[locations[1]].whatsHere = "Spellbook";
@@ -171,12 +146,9 @@ struct MazeUtilities {
      * the maze you solved wasn't the maze we wanted you to solve!
      */
     public static func twistyMazeFor(_ name : String) -> MazeCell {
-        /* Java Random is guaranteed to produce the same sequence of values across
-         * all systems with the same seed.
-         */
-        //Random generator = new Random(hashCode(name, TWISTY_MAZE_SIZE));
-        let generator = Random()
-        var maze = makeTwistyMaze(TWISTY_MAZE_SIZE, generator);
+        let generator = GKMersenneTwisterRandomSource.init(seed: UInt64(hashCode(name, UInt32(TWISTY_MAZE_SIZE))))
+
+        let maze = makeTwistyMaze(TWISTY_MAZE_SIZE, generator);
 
         /* Find the distances between all pairs of nodes. */
         let distances = allPairsShortestPaths(maze);
@@ -184,7 +156,7 @@ struct MazeUtilities {
         /* Select a 4-tuple maximizing the minimum distances between points,
          * and use that as our item/start locations.
          */
-        var locations = remoteLocationsIn(distances);
+        let locations = remoteLocationsIn(distances);
 
         /* Place the items there. */
         maze[locations[1]].whatsHere = "Spellbook";
@@ -319,7 +291,7 @@ struct MazeUtilities {
      * they are all assigned.
      */
   
-    private static func randomFreePortOf(_ cell : MazeCell, _ generator: Random) -> Port? {
+    private static func randomFreePortOf(_ cell : MazeCell, _ generator: GKMersenneTwisterRandomSource) -> Port? {
         var ports = [Port]()
         if (cell.east  == nil) { ports.append(Port.EAST) }
         if (cell.west  == nil) { ports.append(Port.WEST) }
@@ -327,8 +299,8 @@ struct MazeUtilities {
         if (cell.south == nil) { ports.append(Port.SOUTH) }
         if (ports.count == 0) { return nil }
 
-        //let port = generator.nextInt(ports.count);
-        let port = Int.random(in: 0..<ports.count)
+        let port = generator.nextInt(upperBound: ports.count);
+        //let port = Int.random(in: 0..<ports.count)
         return ports[port];
     }
 
@@ -352,15 +324,13 @@ struct MazeUtilities {
      * four or more. We generate mazes this way until we find one that's
      * conencted.
      */
-    private static func erdosRenyiLink(_ nodes : [MazeCell], _ generator : Random) -> Bool {
+    private static func erdosRenyiLink(_ nodes : [MazeCell], _ generator : GKMersenneTwisterRandomSource) -> Bool {
         /* High probability that everything is connected. */
         let threshold = log(Double(nodes.count)) / Double(nodes.count);
 
         for i in 0..<nodes.count {
             for j in (i + 1)..<nodes.count {
-              // OLD IF
-//                if (generator.nextDouble() <= threshold) {
-                  if Double.random(in: 0.0..<1.0) <= threshold {
+                if (Double(generator.nextUniform()) <= threshold) {
                     let iLink = randomFreePortOf(nodes[i], generator)
                     let jLink = randomFreePortOf(nodes[j], generator)
 
@@ -425,7 +395,7 @@ struct MazeUtilities {
     /* Generates a random twisty maze. This works by repeatedly generating
      * random graphs until a connected one is found.
      */
-    private static func makeTwistyMaze(_ numNodes : Int, _ generator : Random) -> [MazeCell] {
+    private static func makeTwistyMaze(_ numNodes : Int, _ generator : GKMersenneTwisterRandomSource) -> [MazeCell] {
         var result = [MazeCell]()
         for _ in 0..<numNodes {
             result.append(MazeCell());
@@ -475,17 +445,16 @@ struct MazeUtilities {
     /* Union-find FIND operation. */
     private static func repFor(_ reps : [MazeCell: MazeCell], _ incomingCell : MazeCell) -> MazeCell {
         var cell = incomingCell
-        while (reps[cell]! != cell) {
+        while (reps[cell]! !== cell) {
             cell = reps[cell]!
         }
         return cell
     }
 
     /* Shuffles the edges using the Fischer-Yates shuffle. */
-    private static func shuffleEdges(_ edges : inout [EdgeBuilder], _ generator : Random) {
+    private static func shuffleEdges(_ edges : inout [EdgeBuilder], _ generator : GKMersenneTwisterRandomSource) {
         for i in 0..<edges.count {
-//            int j = generator.nextInt(edges.size() - i) + i;
-          let j = Int.random(in: 0..<edges.count - i) + i
+            let j = generator.nextInt(upperBound: edges.count - i) + i;
             
             let temp = edges[i]
             edges[i] = edges[j]
@@ -498,7 +467,7 @@ struct MazeUtilities {
      * algorithm. Edges are shuffled and added back in one at a time, provided
      * that each insertion links two disconnected regions.
      */
-    private static func makeMaze(_ numRows : Int, _ numCols : Int, _ generator : Random) -> [[MazeCell]] {
+    private static func makeMaze(_ numRows : Int, _ numCols : Int, _ generator : GKMersenneTwisterRandomSource) -> [[MazeCell]] {
         var maze = Array(repeating: Array(repeating: MazeCell(), count: numCols), count: numRows)
 
         for row in 0..<numRows {
@@ -530,7 +499,7 @@ struct MazeUtilities {
             let rep2 = repFor(representatives, edge.to);
 
             /* If not, link them. */
-            if (rep1 != rep2) {
+            if (rep1 !== rep2) {
                 representatives[rep1] = rep2;
                 
                 link(edge.from, edge.to, edge.fromPort);
